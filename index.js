@@ -4,12 +4,23 @@
         width : 1000,
         height: 600,
     }
+
+    const divSize = {
+        width: 800,
+        height:500,
+    }
+    const divMargin = 100;
     const margin = 30;
 
     let currData;
     let xScale;
     let yScale;
-    let svg
+    let svg;
+    let data;
+
+//    const div = d3.select('body').append('div')
+//         .attr('class', 'tooltip')
+//         .style('opacity', 0)
 
     window.addEventListener("load", init);
 
@@ -25,15 +36,20 @@
     }
 
     function makeScatterPlot(resp) {
-        let population = resp.map((row) => parseInt(row["population"]));
+        data = resp;
+        drawAxis(resp);
+        let population = currData.map((row) => parseInt(row["population"]));
         let popScale = d3.scaleLinear()
                         .domain([d3.min(population), d3.max(population)])
                         .range([0, 30]);
-        drawAxis(resp);
-        let div = d3.select("#graph")
+        let div = d3.select("body")
                     .append("div")
                     .attr("class", "tooltip")
                     .style("opacity", 0)
+
+        let divSvg = div.append('svg')
+                .attr('width', divSize.width)
+                .attr('height', divSize.height)
 
         //let pop_max = d3.max(currData.map((row) => parseInt(row["population"])));
         svg.selectAll("circle")
@@ -53,50 +69,154 @@
                 .style("stroke", "steelblue")
                 .style("stroke-width", 2)
                 .attr("fill", "white")
-                .on("mouseover", (d) => {
+                .on("mouseover", function(d) {
+                    divSvg.selectAll("*").remove()
                     div.transition()
                         .duration(200)
-                        .style("opacity", 0.9);
-                    //div.append
-                    let prompt = d["country"];
-                    //console.log(prompt);
-                    div.html(prompt)
-                        .style("left", (d3.event.pageX) + "px")
-                        .style("top", (d3.event.pageY) + "px");
+                        .style('opacity', 0.9)
+                    plotPop(d.country, divSvg)
+                    div.style('left', d3.event.pageX + "px")
+                        .style('top', (d3.event.pageY - 28) + "px")
                 })
-                .on("mouseout", (d) => {
+                .on("mouseout", function(d) {
                     div.transition()
-                        .duration(500)
-                        .style("opacity", 0)
+                        .duration(300)
+                        .style('opacity', 0)
                 });
 
-        svg.selectAll("text")
-            .data(currData)
+        let largePop = currData.filter(function(d) { return d["population"] > 100000000 })
+
+        svg.selectAll('.text')
+            .data(largePop)
             .enter()
-            .append("text")
-                .attr("x", function(d){return xScale(d["fertility"]) + margin*2;})
-                .attr("y", function(d) {return yScale(d["life_expectancy"]) + margin/4;})
-                .style("font", "20px")
+            .append('text')
+                .attr('x', function(d) { return xScale(+d['fertility']) + margin*2 + 20 + "px" })
+                .attr('y', function(d) { return yScale(+d['life_expectancy']) })
+                .attr("font-size", "10pt")
                 .text(function(d) {
-                    if (d["population"] > 10000000) {
-                        return d["country"];
-                    }
-                });
-            // .on("mouseover", (d) => {
-            //     div.transition()
-            //         .duration(200)
-            //         .style("opacity", 0.9);
-            //     //div.append
-            //     let prompt = d["country"];
-            //     div.html(prompt)
-            //         .style("left", "2px")
-            //         .style("top", "2px");
-            // })
-            // .on("mouseout", (d) => {
-            //     div.transition()
-            //         .duration(500)
-            //         .style("opacity", 0)
-            // });
+                    console.log(d["country"]);
+                    return d['country'] });
+    }
+                // .on("mouseover", (d) => {
+                //     div.transition()
+                //         .duration(200)
+                //         .style("opacity", 0.9);
+                //     //div.append
+                //     let prompt = d["country"];
+                //     //console.log(prompt);
+                //     div.html(prompt)
+                //         .style("left", (d3.event.pageX) + "px")
+                //         .style("top", (d3.event.pageY) + "px");
+                // })
+                // .on("mouseout", (d) => {
+                //     div.transition()
+                //         .duration(500)
+                //         .style("opacity", 0)
+                // });
+
+    //     svg.selectAll("text")
+    //         .data(currData)
+    //         .enter()
+    //         .append("text")
+    //             .attr("x", function(d){return xScale(d["fertility"]) + margin*2;})
+    //             .attr("y", function(d) {return yScale(d["life_expectancy"]) + margin/4;})
+    //             .style("font", "20px")
+    //             .text(function(d) {
+    //                 if (d["population"] > 10000000) {
+    //                     return d["country"];
+    //                 }
+    //             })
+    //         .on("mouseover", function(d) {
+    //             div.transition()
+    //                 .duration(200)
+    //                 .style('opacity', 0.9)
+
+    //             div.style('left', d3.event.pageX + "px")
+    //                 .style('top', (d3.event.pageY - 28) + "px")
+    //         })
+    //         .on("mouseout", function(d) {
+    //             div.transition()
+    //                 .duration(300)
+    //                 .style('opacity', 0)
+    //         })
+    //         // .on("mouseover", (d) => {
+    //         //     div.transition()
+    //         //         .duration(200)
+    //         //         .style("opacity", 0.9);
+    //         //     //div.append
+    //         //     let prompt = d["country"];
+    //         //     div.html(prompt)
+    //         //         .style("left", "2px")
+    //         //         .style("top", "2px");
+    //         // })
+    //         // .on("mouseout", (d) => {
+    //         //     div.transition()
+    //         //         .duration(500)
+    //         //         .style("opacity", 0)
+    //         // });
+    // }
+
+    function plotPop(country, divSvg) {
+        let countryData = data.filter((row) => {return row.country == country})
+        let population = countryData.map((row) => parseInt(row["population"]));
+        let year = countryData.map((row) => parseInt(row["year"]));
+
+        let divxScale = d3.scaleLinear()
+            .domain([d3.min(year) - 0.5,d3.max(year) + 0.5])
+            .range([0 + divMargin, divSize.width - divMargin]);
+
+        divSvg.append("g")
+            .attr("transform","translate(0, " + (divSize.height - divMargin) + ")")
+            .call(d3.axisBottom(divxScale));
+
+        /**************
+         * *****
+         * 
+         */
+        divSvg.append("text")
+            .attr('x', (divSize.width - 2 * divMargin) / 2)
+            .attr('y', divMargin / 2)
+            .style('font-size', '10pt')
+            //.attr("transform","translate(" + (divSize.width/2) + "," + (divMargin + divSize.height) + ")")
+            .text("Graph of " + country +  " : Year vs Population");
+
+        let divyScale = d3.scaleLinear()
+            .domain([d3.min(population) + 5, d3.max(population) - 5])
+            .range([divSize.height - divMargin, divMargin]);
+
+        divSvg.append("g")
+        .attr("transform","translate(" + divMargin + ", 0)")
+        .call(d3.axisLeft(divyScale));
+
+
+        divSvg.append('text')
+        .attr('x', (divSize.width - 2 * divMargin + 200) / 2)
+        .attr('y', divSize.height - divMargin/2)
+        .style('font-size', '10pt')
+        .text("Year");
+
+        divSvg.append("text")
+        .attr("transform","translate(" + divMargin/5 + "," + (divSize.height/2+30) + ") rotate(-90)")
+        .style('font-size', '10pt')
+        .text("Population");
+
+        const line = d3.line()
+            .x(d => divxScale(d['year'])) // set the x values for the line generator
+            .y(d => divyScale(d['population'])); // set the y values for the line generator 
+
+        // append line to svg
+        divSvg.append("path")
+            // difference between data and datum:
+            // https://stackoverflow.com/questions/13728402/what-is-the-difference-d3-datum-vs-data
+            .datum(countryData)
+            .attr("d", function(d) { 
+                return line(d)
+             })
+            .attr("fill", "none")
+            .attr("stroke", "steelblue");
+         /****
+          * 
+          */
     }
 
     function drawAxis(resp) {
